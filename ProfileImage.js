@@ -11,7 +11,10 @@ class ProfileImage {
     this.dragStartY = 0;
     this.imageData = null;
     
-    // Propriedades para o gesto de pinça
+    // Nova referência ao retângulo pai
+    this.leftRectangle = document.getElementById('left-rectangle');
+    
+    // Resto do construtor permanece igual
     this.initialPinchDistance = 0;
     this.initialScale = 1;
     
@@ -83,6 +86,14 @@ class ProfileImage {
         }
       }
     }, { passive: false });
+    
+    // Adicione este novo ouvinte de evento no final do método
+    window.addEventListener('resize', () => {
+      if (document.getElementById('image-controls')) {
+        console.log('*** JANELA REDIMENSIONADA ***');
+        this.logElementPositions();
+      }
+    });
   }
   
   triggerFileUpload() {
@@ -243,9 +254,14 @@ class ProfileImage {
     this.isDragging = false;
   }
   
+  // Modificar este método para anexar os controles ao retângulo lateral
   createControls() {
+    // Remover controles existentes, se houver
+    this.removeControls();
+    
     const controlsContainer = document.createElement('div');
     controlsContainer.className = 'image-controls';
+    controlsContainer.id = 'image-controls';
     
     // Botão de zoom in
     const zoomInButton = this.createButton('+', () => this.zoomImage(0.1));
@@ -264,7 +280,14 @@ class ProfileImage {
     saveButton.classList.add('save-button');
     controlsContainer.appendChild(saveButton);
     
-    this.imageContainer.appendChild(controlsContainer);
+    // Anexar ao retângulo lateral
+    this.leftRectangle.appendChild(controlsContainer);
+    
+    // Log para diagnóstico
+    console.log('Controles criados e anexados ao RETÂNGULO');
+    
+    // Aguardar renderização para obter posições corretas
+    setTimeout(() => this.logElementPositions(), 100);
   }
   
   createButton(text, clickHandler) {
@@ -315,10 +338,11 @@ class ProfileImage {
     }
   }
   
+  // Modificar este método para remover do retângulo lateral
   removeControls() {
-    const controls = this.imageContainer.querySelector('.image-controls');
+    const controls = document.getElementById('image-controls');
     if (controls) {
-      this.imageContainer.removeChild(controls);
+      controls.parentNode.removeChild(controls);
     }
   }
   
@@ -417,6 +441,55 @@ class ProfileImage {
         confirmation.parentNode.removeChild(confirmation);
       }
     }, 2000);
+  }
+  
+  logElementPositions() {
+    // Obter todas as informações relevantes
+    const rect = this.leftRectangle.getBoundingClientRect();
+    const imageRect = this.imageContainer.getBoundingClientRect();
+    const controlsElement = document.getElementById('image-controls');
+    
+    console.log('=== DIAGNÓSTICO DE POSIÇÃO ===');
+    console.log('Dispositivo:', window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP');
+    console.log('Dimensões da janela:', window.innerWidth, 'x', window.innerHeight);
+    
+    // Informações do retângulo lateral
+    console.log('RETÂNGULO:');
+    console.log('- Posição:', rect.left, rect.top);
+    console.log('- Dimensões:', rect.width, 'x', rect.height);
+    
+    // Informações do círculo da imagem
+    console.log('CÍRCULO:');
+    console.log('- Posição:', imageRect.left, imageRect.top);
+    console.log('- Dimensões:', imageRect.width, 'x', imageRect.height);
+    console.log('- Posição relativa ao retângulo:', 
+                imageRect.left - rect.left, 
+                imageRect.top - rect.top);
+    
+    // Informações dos controles
+    if (controlsElement) {
+      const controlsRect = controlsElement.getBoundingClientRect();
+      console.log('CONTROLES:');
+      console.log('- Posição:', controlsRect.left, controlsRect.top);
+      console.log('- Dimensões:', controlsRect.width, 'x', controlsRect.height);
+      console.log('- Posição relativa ao retângulo:', 
+                  controlsRect.left - rect.left, 
+                  controlsRect.top - rect.top);
+      console.log('- Distância entre controles e círculo:', 
+                  controlsRect.top - imageRect.top);
+      
+      // Estilos CSS aplicados
+      const computedStyle = window.getComputedStyle(controlsElement);
+      console.log('ESTILOS CSS APLICADOS:');
+      console.log('- top:', computedStyle.top);
+      console.log('- left:', computedStyle.left);
+      console.log('- transform:', computedStyle.transform);
+      console.log('- width:', computedStyle.width);
+    } else {
+      console.log('CONTROLES: Não encontrados no DOM');
+    }
+    
+    console.log('============================');
   }
 }
 
