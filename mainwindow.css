@@ -90,19 +90,20 @@ position: relative;
 }
 
 .control-button {
-  width: 25px;
-  height: 25px;
+  width: 25px !important;
+  height: 25px !important;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
   border-radius: 50%;
-  font-size: 16px;
+  font-size: 16px !important;
   font-weight: bold;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   padding: 0;
+  margin: 0 3px !important;
 }
 
 .control-button:hover {
@@ -147,15 +148,15 @@ position: relative;
 /* Melhorias para touch em dispositivos móveis */
 @media (max-width: 768px) {
   .control-button {
-    width: 28px; /* Reduzido de 35px */
-    height: 28px; /* Reduzido de 35px */
-    font-size: 16px; /* Reduzido de 20px */
-    margin: 0 3px; /* Reduzido de 5px */
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 15px !important;
+    margin: 0 2px !important;
   }
   
   .image-controls {
-    bottom: 10%;
-    gap: 3px; /* Reduzir espaço entre botões */
+    bottom: 10% !important;
+    gap: 2px !important;
   }
   
   #user-image {
@@ -166,14 +167,14 @@ position: relative;
 /* Para dispositivos realmente pequenos */
 @media (max-width: 480px) {
   .control-button {
-    width: 24px; /* Reduzido de 32px */
-    height: 24px; /* Reduzido de 32px */
-    font-size: 14px;
-    margin: 0 2px;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 14px !important;
+    margin: 0 1px !important;
   }
   
   .image-controls {
-    gap: 2px;
+    gap: 1px !important;
   }
   
   #user-image {
@@ -186,10 +187,10 @@ position: relative;
 /* Para telas muito estreitas (smartphones pequenos em modo retrato) */
 @media (max-width: 360px) {
   .control-button {
-    width: 22px;
-    height: 22px;
-    font-size: 12px;
-    margin: 0 1px;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 12px !important;
+    margin: 0 1px !important;
   }
 }
 
@@ -206,4 +207,3 @@ position: relative;
 .touch-action-none {
   touch-action: none;
 }
-
