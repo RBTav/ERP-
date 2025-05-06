@@ -10,3 +10,16 @@ html, body {
   width: 100%;
   overflow: hidden;
 }
+
+#left-rectangle {
+position: absolute;
+left: 0;
+top: 0;
+width: 20%;
+height: 101%;
+background-color: #1e1e1e;
+/* Sombra para destacar o retângulo */
+box-shadow: 7px 0 15px 3px rgba(0, 0, 0, 0.4);
+min-width: 70px;
+max-width: 300px;
+}
