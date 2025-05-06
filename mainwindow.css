@@ -147,32 +147,49 @@ position: relative;
 /* Melhorias para touch em dispositivos móveis */
 @media (max-width: 768px) {
   .control-button {
-    width: 35px; /* Botões maiores para toque */
-    height: 35px;
-    font-size: 20px;
-    margin: 0 5px; /* Mais espaço entre botões */
+    width: 28px; /* Reduzido de 35px */
+    height: 28px; /* Reduzido de 35px */
+    font-size: 16px; /* Reduzido de 20px */
+    margin: 0 3px; /* Reduzido de 5px */
   }
   
   .image-controls {
-    bottom: 10%; /* Posicionar mais acima para facilitar o acesso */
+    bottom: 10%;
+    gap: 3px; /* Reduzir espaço entre botões */
   }
   
   #user-image {
-    top: 8%; /* Ajustar posição para tablets/celulares */
+    top: 8%;
   }
 }
 
 /* Para dispositivos realmente pequenos */
 @media (max-width: 480px) {
   .control-button {
-    width: 32px;
-    height: 32px;
+    width: 24px; /* Reduzido de 32px */
+    height: 24px; /* Reduzido de 32px */
+    font-size: 14px;
+    margin: 0 2px;
+  }
+  
+  .image-controls {
+    gap: 2px;
   }
   
   #user-image {
-    width: 60%; /* Um pouco maior em telas muito pequenas */
+    width: 60%;
     padding-bottom: 60%;
     left: 20%;
+  }
+}
+
+/* Para telas muito estreitas (smartphones pequenos em modo retrato) */
+@media (max-width: 360px) {
+  .control-button {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+    margin: 0 1px;
   }
 }
 
