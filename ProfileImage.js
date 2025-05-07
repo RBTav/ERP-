@@ -61,18 +61,27 @@ class ProfileImage {
       if (this.isDragging) this.dragImage(e.clientX, e.clientY);
     });
     
-    // Eventos para dispositivos touch
+    // Eventos para dispositivos touch - tornar passive quando possível
     document.addEventListener('touchend', (e) => {
       this.stopDragging();
       if (e.touches.length < 2) this.initialPinchDistance = 0;
-    }, { passive: false });
+    }, { passive: true });
     
     document.addEventListener('touchcancel', () => {
       this.stopDragging();
       this.initialPinchDistance = 0;
     }, { passive: true });
     
+    // Otimização para touchmove com debounce simples
+    let lastMoveTime = 0;
     document.addEventListener('touchmove', (e) => {
+      // Limitar taxa de processamento em dispositivos menos potentes
+      const now = Date.now();
+      if (now - lastMoveTime < 16 && window.devicePixelRatio > 2) { // Skip frames em dispositivos de alta resolução
+        return;
+      }
+      lastMoveTime = now;
+      
       if (this.currentImage) {
         // Detectar gesto de pinça (2 dedos)
         if (e.touches.length >= 2) {
@@ -259,45 +268,76 @@ class ProfileImage {
     // Remover controles existentes, se houver
     this.removeControls();
     
+    // Criar contêiner fora do DOM para melhor performance
     const controlsContainer = document.createElement('div');
     controlsContainer.className = 'image-controls';
     controlsContainer.id = 'image-controls';
     
-    // Botão de zoom in
-    const zoomInButton = this.createButton('+', () => this.zoomImage(0.1));
-    controlsContainer.appendChild(zoomInButton);
+    // Criar fragment para minimizar reflows
+    const fragment = document.createDocumentFragment();
     
-    // Botão de zoom out
-    const zoomOutButton = this.createButton('-', () => this.zoomImage(-0.1));
-    controlsContainer.appendChild(zoomOutButton);
+    // Criar botões e adicioná-los ao fragment
+    const buttons = [
+      { text: '+', action: () => this.zoomImage(0.1) },
+      { text: '-', action: () => this.zoomImage(-0.1) },
+      { text: 'R', action: () => this.resetImage() },
+      { text: '✓', action: () => this.saveImage(), class: 'save-button' }
+    ];
     
-    // Botão de resetar
-    const resetButton = this.createButton('R', () => this.resetImage());
-    controlsContainer.appendChild(resetButton);
+    buttons.forEach(btn => {
+      const button = this.createButton(btn.text, btn.action);
+      if (btn.class) button.classList.add(btn.class);
+      fragment.appendChild(button);
+    });
     
-    // Botão de salvar
-    const saveButton = this.createButton('✓', () => this.saveImage());
-    saveButton.classList.add('save-button');
-    controlsContainer.appendChild(saveButton);
+    // Anexar fragment ao contêiner
+    controlsContainer.appendChild(fragment);
     
-    // Anexar ao retângulo lateral
-    this.leftRectangle.appendChild(controlsContainer);
-    
-    // Log para diagnóstico
-    console.log('Controles criados e anexados ao RETÂNGULO');
-    
-    // Aguardar renderização para obter posições corretas
-    setTimeout(() => this.logElementPositions(), 100);
+    // Adicionar contêiner ao DOM em um único reflow
+    requestAnimationFrame(() => {
+      this.leftRectangle.appendChild(controlsContainer);
+    });
   }
   
+  // Substituir o método createButton existente
   createButton(text, clickHandler) {
     const button = document.createElement('button');
     button.className = 'control-button';
     button.textContent = text;
-    button.addEventListener('click', (e) => {
-      clickHandler();
+    
+    // Usar touchstart com passive true para resposta imediata em dispositivos móveis
+    button.addEventListener('touchstart', (e) => {
+      // Fornecer feedback visual imediato
+      button.style.opacity = '0.7';
+      
+      // Impedir propagação para evitar conflitos
+      e.stopPropagation();
+    }, { passive: true });
+    
+    // Touchend para completar a ação
+    button.addEventListener('touchend', (e) => {
+      // Restaurar aparência normal
+      button.style.opacity = '1';
+      
+      // Executar a ação após um pequeno atraso para permitir a animação
+      setTimeout(() => {
+        clickHandler();
+      }, 0);
+      
+      // Impedir cliques fantasmas e outros eventos
+      e.preventDefault();
       e.stopPropagation();
     });
+    
+    // Manter evento de clique para desktop
+    button.addEventListener('click', (e) => {
+      // Dispositivos não touch usarão este evento
+      if (!('ontouchstart' in window)) {
+        clickHandler();
+        e.stopPropagation();
+      }
+    });
+    
     return button;
   }
   
@@ -346,101 +386,249 @@ class ProfileImage {
     }
   }
   
+  // Modificar o início do método saveImage
   saveImage() {
     if (!this.currentImage) return;
     
-    // Criar um canvas para processar a imagem
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    // Mostrar indicador de processamento
+    const processing = document.createElement('div');
+    processing.className = 'save-confirmation';
+    processing.textContent = 'Processando...';
+    processing.id = 'processing-indicator';
+    this.imageContainer.appendChild(processing);
     
-    // Tamanho do círculo
-    const containerWidth = this.imageContainer.offsetWidth;
-    const containerHeight = this.imageContainer.offsetHeight;
+    // Timeout de segurança para remover o indicador em caso de falha
+    const safetyTimeout = setTimeout(() => {
+      this.removeProcessingIndicator();
+    }, 10000); // 10 segundos de timeout
     
-    // Configurar o canvas com o tamanho do círculo
-    canvas.width = containerWidth;
-    canvas.height = containerHeight;
-    
-    // Criar um caminho circular para corte
-    ctx.beginPath();
-    ctx.arc(containerWidth / 2, containerHeight / 2, containerWidth / 2, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
-    
-    // Salvar o estado do canvas antes das transformações
-    ctx.save();
-    
-    // Aplicar transformações na ordem correta
-    ctx.translate(containerWidth / 2, containerHeight / 2);
-    ctx.scale(this.scale, this.scale);
-    ctx.translate(-containerWidth / 2 + this.posX / this.scale, -containerHeight / 2 + this.posY / this.scale);
-    
-    // Obter dimensões da imagem original
-    const imgWidth = this.currentImage.naturalWidth || this.currentImage.width;
-    const imgHeight = this.currentImage.naturalHeight || this.currentImage.height;
-    
-    // Calcular proporção para ajuste correto
-    const containerRatio = containerWidth / containerHeight;
-    const imgRatio = imgWidth / imgHeight;
-    
-    let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
-    
-    // Calcular dimensões mantendo proporção
-    if (imgRatio > containerRatio) {
-      // Imagem é mais larga que o contêiner
-      drawHeight = containerHeight;
-      drawWidth = drawHeight * imgRatio;
-      offsetX = (containerWidth - drawWidth) / 2;
-    } else {
-      // Imagem é mais alta que o contêiner
-      drawWidth = containerWidth;
-      drawHeight = drawWidth / imgRatio;
-      offsetY = (containerHeight - drawHeight) / 2;
-    }
-    
-    // Desenhar a imagem com dimensões proporcionais
-    ctx.drawImage(this.currentImage, offsetX, offsetY, drawWidth, drawHeight);
-    
-    // Restaurar o estado original do canvas
-    ctx.restore();
-    
-    // Obter dados da imagem processada
-    this.imageData = canvas.toDataURL('image/png');
-    
-    // Substituir a imagem original pela imagem processada
-    this.currentImage.src = this.imageData;
-    
-    // Resetar transformações após salvar
-    this.scale = 1;
-    this.posX = 0;
-    this.posY = 0;
-    this.updateImageTransform();
-    
-    // Remover os controles de edição
-    this.removeControls();
-    
-    // Redefinir cursor para o padrão (não mais "move")
-    if (this.currentImage) {
-      this.currentImage.style.cursor = 'pointer';
-    }
-    
-    // Feedback visual para o usuário
-    this.showSaveConfirmation();
+    // Adiar o trabalho pesado para permitir atualização da UI
+    setTimeout(() => {
+      try {
+        const originalSource = this.currentImage.src;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Determinar tamanho do círculo
+        const containerWidth = this.imageContainer.offsetWidth;
+        const containerHeight = this.imageContainer.offsetHeight;
+        
+        // Ajuste de qualidade baseado nas capacidades do dispositivo
+        let qualityFactor;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Reduzir qualidade em dispositivos móveis
+          qualityFactor = Math.min(2, window.devicePixelRatio || 1);
+          
+          // Atualizar indicador de processamento
+          this.updateProcessingStatus("Otimizando para dispositivo...");
+        } else {
+          // Usar alta qualidade em desktops
+          qualityFactor = window.devicePixelRatio >= 2 ? 3 : 2;
+        }
+        
+        // Configurar canvas com resolução mais adequada ao dispositivo
+        canvas.width = containerWidth * qualityFactor;
+        canvas.height = containerHeight * qualityFactor;
+        
+        // Configurações de renderização
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        
+        // Atualizar indicador
+        this.updateProcessingStatus("Recortando imagem...");
+        
+        // Recortar em forma de círculo
+        ctx.beginPath();
+        ctx.arc(canvas.width/2, canvas.height/2, canvas.width/2, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.clip();
+        
+        // Fundo para áreas transparentes
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Dividir o processamento em etapas para evitar bloqueio da UI
+        const completeImageProcessing = () => {
+          try {
+            // Atualizar indicador
+            this.updateProcessingStatus("Aplicando transformações...");
+            
+            // Salvar estado do canvas
+            ctx.save();
+            
+            // Aplicar transformações
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(this.scale * qualityFactor, this.scale * qualityFactor);
+            ctx.translate(
+              -containerWidth/2 + this.posX/this.scale, 
+              -containerHeight/2 + this.posY/this.scale
+            );
+            
+            const imgWidth = this.currentImage.naturalWidth || this.currentImage.width;
+            const imgHeight = this.currentImage.naturalHeight || this.currentImage.height;
+            
+            const containerRatio = containerWidth / containerHeight;
+            const imgRatio = imgWidth / imgHeight;
+            
+            let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+            
+            // Calcular dimensões mantendo proporção
+            if (imgRatio > containerRatio) {
+              drawHeight = containerHeight;
+              drawWidth = drawHeight * imgRatio;
+              offsetX = (containerWidth - drawWidth) / 2;
+            } else {
+              drawWidth = containerWidth;
+              drawHeight = drawWidth / imgRatio;
+              offsetY = (containerHeight - drawHeight) / 2;
+            }
+            
+            // Atualizar indicador
+            this.updateProcessingStatus("Renderizando...");
+            
+            // Desenhar a imagem
+            ctx.drawImage(this.currentImage, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.restore();
+            
+            // Formato e qualidade adequados para dispositivos móveis
+            const imageFormat = isMobile ? 'image/jpeg' : 'image/png';
+            const imageQuality = isMobile ? 0.85 : 1.0;
+            
+            // Obter dados da imagem processada
+            this.imageData = canvas.toDataURL(imageFormat, imageQuality);
+            
+            // Finalizar o processamento em outra etapa
+            setTimeout(() => this.finalizeImageSaving(), 0);
+          } catch (err) {
+            console.error("Erro ao aplicar transformações:", err);
+            this.handleProcessingError("Erro ao processar imagem");
+          }
+        };
+        
+        // Iniciar processamento após um breve atraso
+        setTimeout(completeImageProcessing, 100);
+      } catch (err) {
+        console.error("Erro inicial ao processar imagem:", err);
+        this.handleProcessingError("Erro ao iniciar processamento");
+      }
+      
+      // Limpar o timeout de segurança - código continuará executando
+      clearTimeout(safetyTimeout);
+    }, 200); // Aumentado para 200ms para garantir atualização da UI
   }
   
+  // Método para atualizar o status de processamento
+  updateProcessingStatus(message) {
+    const indicator = document.getElementById('processing-indicator');
+    if (indicator) {
+      indicator.textContent = message;
+    }
+  }
+  
+  // Método para remover indicador de processamento
+  removeProcessingIndicator() {
+    const indicator = document.getElementById('processing-indicator');
+    if (indicator && indicator.parentNode) {
+      indicator.parentNode.removeChild(indicator);
+    }
+  }
+  
+  // Método para lidar com erros de processamento
+  handleProcessingError(message) {
+    this.removeProcessingIndicator();
+    
+    // Mostrar mensagem de erro
+    const errorMsg = document.createElement('div');
+    errorMsg.className = 'save-confirmation';
+    errorMsg.style.backgroundColor = 'rgba(204, 0, 0, 0.8)';
+    errorMsg.textContent = message || 'Erro ao processar imagem';
+    this.imageContainer.appendChild(errorMsg);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+      if (errorMsg.parentNode) {
+        errorMsg.parentNode.removeChild(errorMsg);
+      }
+    }, 3000);
+  }
+  
+  // Método para finalizar o salvamento da imagem
+  finalizeImageSaving() {
+    try {
+      // Atualizar indicador
+      this.updateProcessingStatus("Finalizando...");
+      
+      // Substituir imagem por versão processada
+      const newImage = new Image();
+      
+      newImage.onload = () => {
+        if (this.currentImage) {
+          // Preservar todos os estilos
+          newImage.style.cssText = this.currentImage.style.cssText;
+          newImage.style.cursor = 'pointer';
+          
+          // Substituir imagem
+          this.imageContainer.replaceChild(newImage, this.currentImage);
+          this.currentImage = newImage;
+          
+          // Resetar transformações
+          this.scale = 1;
+          this.posX = 0;
+          this.posY = 0;
+          
+          // Remover controles e indicador de processamento
+          this.removeControls();
+          this.removeProcessingIndicator();
+          
+          // Feedback de sucesso
+          this.showSaveConfirmation();
+        }
+      };
+      
+      newImage.onerror = () => {
+        this.handleProcessingError("Erro ao carregar imagem");
+      };
+      
+      newImage.src = this.imageData;
+    } catch (err) {
+      console.error("Erro ao finalizar imagem:", err);
+      this.handleProcessingError("Erro ao finalizar");
+    }
+  }
+  
+  // Método para mostrar confirmação de salvamento
   showSaveConfirmation() {
     // Criar elemento de confirmação
     const confirmation = document.createElement('div');
     confirmation.className = 'save-confirmation';
     confirmation.textContent = 'Imagem salva!';
+    
+    // Aplicar estilo especial para confirmação de sucesso
+    confirmation.style.backgroundColor = 'rgba(46, 204, 113, 0.8)'; // Verde
+    
+    // Adicionar ao contêiner da imagem
     this.imageContainer.appendChild(confirmation);
     
-    // Remover após animação
+    // Remover automaticamente após a animação
     setTimeout(() => {
       if (confirmation.parentNode) {
         confirmation.parentNode.removeChild(confirmation);
       }
-    }, 2000);
+    }, 2000); // 2 segundos, tempo suficiente para a animação de fadeOut
+    
+    // Registrar no log de debug se disponível
+    if (window.debugManager) {
+      window.debugManager.log('controls', 'Imagem salva com sucesso', {
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Registrar evento para analytics de performance
+    if (window.performanceMonitor && window.performanceMonitor.isEnabled) {
+      console.info('Image processing completed successfully');
+    }
   }
   
   logElementPositions() {
