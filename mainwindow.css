@@ -1,3 +1,4 @@
+
 * {
   margin: 0;
   padding: 0;
@@ -11,205 +12,17 @@ html, body {
   overflow: hidden;
 }
 
+/* Painel lateral esquerdo */
 #left-rectangle {
-position: absolute;
-left: 0;
-top: 0;
-width: 20%;
-height: 100%;
-background-color: #2b2b2b;
-/* Sombra para destacar o retângulo */
-box-shadow: 7px 0 15px 3px rgba(0, 0, 0, 0.4);
-min-width: 70px;
-max-width: 300px;
-border-radius: 0 25px 25px 0;
-position: relative;
-}
-
-#user-image {
   position: absolute;
-  top: 10%;
-  left: 25%; 
-  width: 50%; /* Tamanho relativo à largura do retângulo */
-  padding-bottom: 50%; /* Mantém proporção 1:1 (circular) */
-  background-color: transparent;
-  border-radius: 50%; /* Torna o elemento circular */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  max-width: 150px;
-  max-height: 150px;
-  cursor: pointer;
-  overflow: hidden; /* Para cortar a imagem no formato circular */
-}
-
-.profile-image-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.hidden-upload {
-  position: absolute;
-  width: 0.1px;
-  height: 0.1px;
-  opacity: 0;
-  overflow: hidden;
-  z-index: -1;
-}
-
-.profile-placeholder {
-  position: absolute;
-  top: 0;
   left: 0;
-  width: 100%;
+  top: 0;
+  width: 20%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #ffffff;
-  font-size: 24px;
-}
-
-.upload-icon {
-  font-size: 32px;
-  font-weight: bold;
-}
-
-#user-image.has-image .profile-placeholder {
-  display: none;
-}
-
-/* Estilo base dos controles - posicionamento padrão para desktop */
-.image-controls {
-  position: absolute;
-  top: 5px !important; /* Posição padrão para desktop */
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  z-index: 9999 !important;
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 4px 6px;
-  border-radius: 20px;
-  width: fit-content;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  max-width: 90%; /* Limita a largura em relação ao contêiner */
-}
-
-/* Estilo base dos botões - CORRIGIDO PARA MANTER PROPORÇÃO */
-.control-button {
-  width: 28px !important;
-  height: 28px !important; /* Altura IGUAL à largura */
-  background-color: #3498db !important;
-  color: white;
-  border: 2px solid white !important;
-  border-radius: 50%;
-  font-size: 14px !important;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  padding: 0;
-  margin: 0 !important;
-  min-width: 0 !important; /* Evita que o botão se expanda */
-  min-height: 0 !important; /* Evita que o botão se expanda */
-  line-height: 1 !important; /* Evita problemas de altura da linha */
-}
-
-/* Ajustes para telas médias (tablets) */
-@media (max-width: 768px) {
-  /* Propriedades dos botões permanecem iguais */
-  .control-button {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 12px !important;
-    border-width: 1px !important;
-  }
-  
-  /* Ajustes do contêiner - POSIÇÃO ACIMA DO CÍRCULO */
-  .image-controls {
-    gap: 4px;
-    padding: 3px 5px;
-    top: 40px !important; /* Ajustado para ficar acima do círculo */
-  }
-}
-
-/* Ajustes para telas pequenas (smartphones) */
-@media (max-width: 480px) {
-  .control-button {
-    width: 18px !important;
-    height: 18px !important;
-    font-size: 10px !important;
-    border-width: 1px !important;
-  }
-  
-  .image-controls {
-    gap: 2px;
-    padding: 3px 4px;
-    border-radius: 15px;
-    top: 45px !important; /* Ajustado para ficar fora da área do círculo */
-  }
-}
-
-/* Ajustes para telas muito pequenas */
-@media (max-width: 360px) {
-  .control-button {
-    width: 16px !important;
-    height: 16px !important;
-    font-size: 9px !important;
-    border-width: 1px !important;
-  }
-  
-  .image-controls {
-    gap: 1px;
-    padding: 2px 3px;
-    top: 40px !important; /* Recuado para evitar invasão do círculo */
-  }
-}
-
-.save-button {
-  background-color: rgba(46, 204, 113, 0.9) !important; /* Verde para destacar */
-  color: white;
-}
-
-.save-button:hover {
-  background-color: rgba(46, 204, 113, 0.9) !important;
-}
-
-.save-confirmation {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  animation: fadeIn 0.3s ease-in-out, fadeOut 0.3s ease-in-out 1.7s;
-  z-index: 20;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-/* Prevenir seleção de texto durante arrasto */
-#user-image img {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Prevenir zoom do navegador em dispositivos móveis */
-.touch-action-none {
-  touch-action: none;
+  background-color: #2b2b2b;
+  box-shadow: 7px 0 15px 3px rgba(0, 0, 0, 0.4);
+  min-width: 70px;
+  max-width: 300px;
+  border-radius: 0 25px 25px 0;
+  position: relative;
 }
