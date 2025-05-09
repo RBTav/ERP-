@@ -1,0 +1,30 @@
+/* Estilos gerais da aplicação */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: #fff1aa;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Painel lateral esquerdo */
+#left-rectangle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20%;
+  height: 100%;
+  background-color: #2b2b2b;
+  box-shadow: 7px 0 15px 3px rgba(0, 0, 0, 0.4);
+  min-width: 70px;
+  max-width: 300px;
+  border-radius: 0 25px 25px 0;
+  position: relative;
+}
+

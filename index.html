@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>ERP ERT</title>
+  
+  <!-- Estilos -->
+  <link rel="stylesheet" href="mainwindow.css">
+  <link rel="stylesheet" href="ProfileImage.css">
+  <link rel="stylesheet" href="auth/login.css">
+  
+  <!-- Dependências -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Estilos inline essenciais -->
+  <style>
+    /* Estilos de emergência para garantir visibilidade */
+    #app-content {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      display: block !important;
+      height: 100vh;
+    }
+    
+    #left-rectangle {
+      display: block !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    
+    /* Previne flash da tela de login durante carregamento */
+    #auth-container {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #auth-container.visible {
+      opacity: 1;
+    }
+  </style>
+  
+  <!-- Script de pré-verificação de sessão (deve ser o primeiro script) -->
+  <script src="auth/session-detection.js"></script>
+</head>
+<body>
+  <!-- Container principal da aplicação -->
+  <div id="app-content">
+    <!-- Retângulo lateral esquerdo -->
+    <div id="left-rectangle">
+      <!-- Componente de imagem de perfil -->
+      <div id="user-image" class="profile-image-container touch-action-none">
+        <input type="file" id="profile-upload" accept="image/*" class="hidden-upload">
+        <div class="profile-placeholder">
+          <span class="upload-icon">+</span>
+        </div>
+      </div>
+      
+      <!-- Container para informações do usuário -->
+      <div id="user-info-container" style="position: absolute; bottom: 60px; left: 0; width: 100%; padding: 10px; text-align: center; color: white; font-size: 12px; display: none;"></div>
+      
+      <!-- Botão de logout -->
+      <div id="logout-button" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); cursor: pointer; background-color: #e74c3c; color: white; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: none; text-align: center; width: 80%; transition: all 0.2s;">
+        Sair
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts de autenticação (ordem importante) -->
+  <script src="auth/auth-loader.js"></script>
+  <script src="auth/auth-scripts.js"></script>
+  <script src="auth/session-persistence.js"></script>
+  <script src="auth/auth.js"></script>
+  <script src="auth/login.js"></script>
+  <script src="auth/auto-login-fix.js"></script>
+  <script src="auth/logout-fix.js"></script>
+  <script src="auth/emergency-bypass.js"></script>
+  <script src="auth/index.js"></script>
+
+  <!-- Scripts da aplicação -->
+  <script src="performance-monitor.js"></script>
+  <script src="performance-touch.js"></script>
+  <script src="debug.js"></script>
+  <script src="ProfileImage.js"></script>
+  
+  <!-- Script de recuperação de interface -->
+  <script src="auth/recovery.js"></script>
+</body>
+</html>
