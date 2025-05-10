@@ -205,6 +205,8 @@
   padding: 8px;
   margin: 0 10px;
   transition: all 0.3s ease;
+  left: -11px;
+  position: relative;
 }
 
 #user-info-container:hover {
@@ -217,13 +219,15 @@
     padding: 5px;
     margin: 0 5px;
     font-size: 10px;
+    left: -11px;
   }
 }
 
-/* Ajuste responsivo para as informações do usuário e botão de logout */
+/* Ajuste responsivo para as informações do usuário e botão de logout (Tablets) */
 @media (max-width: 768px) {
   #user-info-container {
     bottom: 100px !important;
+    left: -5px !important;
   }
   
   #logout-button {
@@ -236,6 +240,7 @@
   #user-info-container {
     bottom: 110px !important;
     font-size: 14px !important;
+    left: -5px !important;
   }
   
   #logout-button {

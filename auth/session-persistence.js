@@ -11,6 +11,50 @@
   }
   
   document.addEventListener('DOMContentLoaded', () => {
+    // Adicionar verificação para ajustar a posição do container de informações do usuário
+    const fixUserInfoPosition = () => {
+      const userInfoContainer = document.getElementById('user-info-container');
+      if (!userInfoContainer) return;
+      
+      // Detectar tamanho da tela
+      const isMobile = window.innerWidth <= 480;
+      const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
+      
+      // Aplicar posicionamento apropriado
+      if (isMobile) {
+        userInfoContainer.style.bottom = '110px';
+        userInfoContainer.style.left = '-5px';
+        userInfoContainer.style.fontSize = '14px';
+        userInfoContainer.style.padding = '8px';
+        console.log('[SessionPersistence] Ajustando posição para celular');
+      } else if (isTablet) {
+        userInfoContainer.style.bottom = '100px';
+        userInfoContainer.style.left = '-5px';
+        userInfoContainer.style.fontSize = '10px';
+        userInfoContainer.style.padding = '5px';
+        console.log('[SessionPersistence] Ajustando posição para tablet');
+      } else {
+        // Desktop
+        userInfoContainer.style.bottom = '60px';
+        userInfoContainer.style.left = '-11px'; // Valor ajustado para PC
+        userInfoContainer.style.fontSize = '12px';
+        userInfoContainer.style.padding = '8px';
+        console.log('[SessionPersistence] Ajustando posição para desktop');
+      }
+    };
+    
+    // Executar imediatamente e depois periodicamente até ter sucesso
+    const checkInterval = setInterval(() => {
+      const userInfoContainer = document.getElementById('user-info-container');
+      if (userInfoContainer && userInfoContainer.style.display !== 'none') {
+        fixUserInfoPosition();
+        clearInterval(checkInterval);
+      }
+    }, 500);
+
+    // Também executar quando a janela for redimensionada
+    window.addEventListener('resize', fixUserInfoPosition);
+
     // Verificar o estado de autenticação periodicamente para manter a persistência
     const checkAuthState = setInterval(() => {
       if (window.authManager && window.authManager.isAuthenticated()) {
@@ -109,4 +153,33 @@
       sessionStorage.removeItem('userProfile');
     }
   }
+
+  // Adicionar listener de redimensionamento global para o container fixo
+  document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('resize', () => {
+      const userInfoContainer = document.getElementById('user-info-container');
+      if (!userInfoContainer) return;
+      
+      // Aplicar estilos responsivos
+      const isMobile = window.innerWidth <= 480;
+      const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
+      
+      if (isMobile) {
+        userInfoContainer.style.bottom = '110px';
+        userInfoContainer.style.left = '-5px';
+        userInfoContainer.style.fontSize = '14px';
+        userInfoContainer.style.padding = '8px';
+      } else if (isTablet) {
+        userInfoContainer.style.bottom = '100px';
+        userInfoContainer.style.left = '-5px';
+        userInfoContainer.style.fontSize = '10px';
+        userInfoContainer.style.padding = '5px';
+      } else {
+        userInfoContainer.style.bottom = '60px';
+        userInfoContainer.style.left = '-11px';
+        userInfoContainer.style.fontSize = '12px';
+        userInfoContainer.style.padding = '8px';
+      }
+    });
+  });
 })();

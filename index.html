@@ -58,8 +58,12 @@
         </div>
       </div>
       
-      <!-- Container para informações do usuário -->
-      <div id="user-info-container" style="position: absolute; bottom: 60px; left: 0; width: 100%; padding: 10px; text-align: center; color: white; font-size: 12px; display: none;"></div>
+      <!-- Container fixo para informações do usuário -->
+      <div id="user-info-container" style="position: absolute; bottom: 60px; left: -11px; width: 100%; padding: 8px; text-align: center; color: white; font-size: 12px; background-color: rgba(0, 0, 0, 0.2); border-radius: 4px; transition: all 0.3s ease; display: none;">
+        <!-- O conteúdo será preenchido dinamicamente -->
+        <div id="user-name" style="font-weight: bold;">Usuário</div>
+        <div id="user-role" style="font-size: 10px; opacity: 0.8; margin-top: 3px;">Desconectado</div>
+      </div>
       
       <!-- Botão de logout -->
       <div id="logout-button" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); cursor: pointer; background-color: #e74c3c; color: white; padding: 8px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: none; text-align: center; width: 80%; transition: all 0.2s;">
@@ -84,6 +88,7 @@
   <script src="performance/performance-touch.js"></script>
   <script src="debug.js"></script>
   <script src="user_preference/profile_image/ProfileImage.js"></script>
+
   
   <!-- Script de recuperação de interface -->
   <script src="auth/recovery.js"></script>

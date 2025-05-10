@@ -825,42 +825,46 @@ class LoginManager {
       }
     }
     
-    // Criar elemento para informações do usuário
-    const userInfoContainer = document.createElement('div');
-    userInfoContainer.id = 'user-info-container';
-    userInfoContainer.style.cssText = `
-      position: absolute;
-      bottom: 60px;
-      left: 0;
-      width: 100%;
-      padding: 10px;
-      text-align: center;
-      color: white;
-      font-size: 12px;
-    `;
+    // Obter referência ao container existente em vez de criar um novo
+    const userInfoContainer = document.getElementById('user-info-container');
+    if (!userInfoContainer) {
+      console.error('Container de informações do usuário não encontrado no DOM');
+      return;
+    }
     
-    // Adicionar nome e nível do usuário
-    const userName = document.createElement('div');
-    userName.textContent = userProfile.full_name || 'Usuário';
-    userName.style.fontWeight = 'bold';
+    // Atualizar apenas o conteúdo
+    const userName = document.getElementById('user-name');
+    const userRole = document.getElementById('user-role');
     
-    const userRole = document.createElement('div');
-    userRole.textContent = this.formatPrivilegeLevel(userProfile.privilege_level || 'user');
-    userRole.style.fontSize = '10px';
-    userRole.style.opacity = '0.8';
-    userRole.style.marginTop = '3px';
+    if (userName) userName.textContent = userProfile.full_name || 'Usuário';
+    if (userRole) userRole.textContent = this.formatPrivilegeLevel(userProfile.privilege_level || 'user');
     
-    userInfoContainer.appendChild(userName);
-    userInfoContainer.appendChild(userRole);
+    // Mostrar o container
+    userInfoContainer.style.display = 'block';
     
-    // Verificar se o elemento já existe e remover
-    const existingInfo = document.getElementById('user-info-container');
-    if (existingInfo) existingInfo.remove();
+    // Aplicar estilos responsivos baseados no tamanho da tela
+    const isMobile = window.innerWidth <= 480;
+    const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
     
-    // Adicionar ao leftRectangle
-    const leftRectangle = document.getElementById('left-rectangle');
-    if (leftRectangle) {
-      leftRectangle.appendChild(userInfoContainer);
+    if (isMobile) {
+      userInfoContainer.style.bottom = '110px';
+      userInfoContainer.style.left = '-5px';
+      userInfoContainer.style.fontSize = '14px';
+      userInfoContainer.style.padding = '8px';
+      console.log('[UserInfo] Aplicando estilo para celular');
+    } else if (isTablet) {
+      userInfoContainer.style.bottom = '100px';
+      userInfoContainer.style.left = '-5px';
+      userInfoContainer.style.fontSize = '10px';
+      userInfoContainer.style.padding = '5px';
+      console.log('[UserInfo] Aplicando estilo para tablet');
+    } else {
+      // Desktop
+      userInfoContainer.style.bottom = '60px';
+      userInfoContainer.style.left = '-11px';
+      userInfoContainer.style.fontSize = '12px';
+      userInfoContainer.style.padding = '8px';
+      console.log('[UserInfo] Aplicando estilo para desktop');
     }
   }
   
