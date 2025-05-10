@@ -219,3 +219,28 @@
     font-size: 10px;
   }
 }
+
+/* Ajuste responsivo para as informações do usuário e botão de logout */
+@media (max-width: 768px) {
+  #user-info-container {
+    bottom: 100px !important;
+  }
+  
+  #logout-button {
+    bottom: 50px !important;
+  }
+}
+
+/* Para celulares muito pequenos */
+@media (max-width: 480px) {
+  #user-info-container {
+    bottom: 120px !important;
+    font-size: 14px !important;
+  }
+  
+  #logout-button {
+    bottom: 60px !important;
+    padding: 10px 15px !important; 
+    font-size: 14px !important;
+  }
+}
