@@ -234,7 +234,7 @@
 /* Para celulares muito pequenos */
 @media (max-width: 480px) {
   #user-info-container {
-    bottom: 120px !important;
+    bottom: 110px !important;
     font-size: 14px !important;
   }
   
