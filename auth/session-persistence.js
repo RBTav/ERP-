@@ -10,50 +10,101 @@
     console.log('[SessionPersistence] Forçando tela de login por parâmetro de logout');
   }
   
-  document.addEventListener('DOMContentLoaded', () => {
-    // Adicionar verificação para ajustar a posição do container de informações do usuário
-    const fixUserInfoPosition = () => {
-      const userInfoContainer = document.getElementById('user-info-container');
-      if (!userInfoContainer) return;
-      
-      // Detectar tamanho da tela
-      const isMobile = window.innerWidth <= 480;
-      const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
-      
-      // Aplicar posicionamento apropriado
-      if (isMobile) {
-        userInfoContainer.style.bottom = '110px';
-        userInfoContainer.style.left = '-5px';
-        userInfoContainer.style.fontSize = '14px';
-        userInfoContainer.style.padding = '8px';
-        console.log('[SessionPersistence] Ajustando posição para celular');
-      } else if (isTablet) {
-        userInfoContainer.style.bottom = '100px';
-        userInfoContainer.style.left = '-5px';
-        userInfoContainer.style.fontSize = '10px';
-        userInfoContainer.style.padding = '5px';
-        console.log('[SessionPersistence] Ajustando posição para tablet');
-      } else {
-        // Desktop
-        userInfoContainer.style.bottom = '60px';
-        userInfoContainer.style.left = '-11px'; // Valor ajustado para PC
-        userInfoContainer.style.fontSize = '12px';
-        userInfoContainer.style.padding = '8px';
-        console.log('[SessionPersistence] Ajustando posição para desktop');
-      }
-    };
+  // Função ÚNICA para ajustar posição do container de usuário - MODIFICADA PARA POSICIONAMENTO RELATIVO
+  function adjustUserInfoContainer() {
+    const userInfoContainer = document.getElementById('user-info-container');
+    const userImageContainer = document.getElementById('user-image');
     
-    // Executar imediatamente e depois periodicamente até ter sucesso
+    if (!userInfoContainer || !userImageContainer) return;
+    
+    // Obter a posição e altura do círculo de imagem
+    const imageRect = userImageContainer.getBoundingClientRect();
+    const leftRectRect = document.getElementById('left-rectangle').getBoundingClientRect();
+    
+    // Detectar tamanho da tela
+    const isMobile = window.innerWidth <= 480;
+    const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
+    
+    // DISTÂNCIA ENTRE A IMAGEM E O CONTAINER DE INFORMAÇÕES (vertical)
+    let distanceFromImage = 20; // Valor padrão para Desktop - AJUSTE ESTE VALOR
+    
+    // Ajustar distância vertical com base no dispositivo
+    if (isMobile) {
+      distanceFromImage = 15;
+    } else if (isTablet) {
+      distanceFromImage = 18;
+    }
+    
+    // Calcular nova posição top: altura do elemento de imagem + distância desejada
+    // A posição é relativa ao left-rectangle
+    const newTop = (imageRect.bottom - leftRectRect.top) + distanceFromImage;
+    
+    // AJUSTES DE POSIÇÃO HORIZONTAL
+    // Calcular o centro do retângulo lateral
+    const leftRectCenter = leftRectRect.width / 2;
+    
+    // OFFSET HORIZONTAL (ajuste fino por dispositivo)
+    let horizontalOffset = 0; // Valor padrão para Desktop - AJUSTE ESTE VALOR
+    
+    if (isMobile) {
+      horizontalOffset = -5;
+    } else if (isTablet) {
+      horizontalOffset = -5;
+    }
+    
+    // Aplicar posição calculada e outros estilos
+    userInfoContainer.style.setProperty('position', 'absolute', 'important');
+    userInfoContainer.style.setProperty('top', `${newTop}px`, 'important');
+    userInfoContainer.style.setProperty('left', `${horizontalOffset}px`, 'important'); // Posição horizontal ajustada
+    userInfoContainer.style.setProperty('width', '100%', 'important'); // Garantir que a largura seja consistente
+    
+    // Resto dos estilos específicos por dispositivo
+    if (isMobile) {
+      userInfoContainer.style.setProperty('font-size', '14px', 'important');
+      userInfoContainer.style.setProperty('padding', '8px', 'important');
+      console.log(`[SessionPersistence] Posição ajustada para celular: top=${newTop}px, left=${horizontalOffset}px`);
+    } else if (isTablet) {
+      userInfoContainer.style.setProperty('font-size', '10px', 'important');
+      userInfoContainer.style.setProperty('padding', '5px', 'important');
+      console.log(`[SessionPersistence] Posição ajustada para tablet: top=${newTop}px, left=${horizontalOffset}px`);
+    } else {
+      // Desktop
+      userInfoContainer.style.setProperty('font-size', '12px', 'important');
+      userInfoContainer.style.setProperty('padding', '8px', 'important');
+      console.log(`[SessionPersistence] Posição ajustada para desktop: top=${newTop}px, left=${horizontalOffset}px`);
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    // Executar imediatamente e também após um delay para garantir
+    adjustUserInfoContainer();
+    
+    // Aplicar novamente após um curto delay para garantir que funcione após a inicialização completa
+    setTimeout(adjustUserInfoContainer, 500);
+    
+    // Aplicar uma terceira vez após interface completa estar carregada
+    setTimeout(adjustUserInfoContainer, 2000);
+    
+    // MODIFICADO: Verificar algumas vezes e depois parar, em vez de verificar infinitamente
+    let checkCount = 0;
+    const maxChecks = 5; // Número máximo de verificações
+    
     const checkInterval = setInterval(() => {
       const userInfoContainer = document.getElementById('user-info-container');
       if (userInfoContainer && userInfoContainer.style.display !== 'none') {
-        fixUserInfoPosition();
-        clearInterval(checkInterval);
+        adjustUserInfoContainer();
+        checkCount++;
+        
+        // Limpar o intervalo após o número máximo de verificações
+        if (checkCount >= maxChecks) {
+          console.log('[SessionPersistence] Verificações de posição concluídas, monitoramento contínuo desativado');
+          clearInterval(checkInterval);
+        }
       }
-    }, 500);
+    }, 1000);
 
-    // Também executar quando a janela for redimensionada
-    window.addEventListener('resize', fixUserInfoPosition);
+    // Também executar quando a janela for redimensionada (isso continua funcionando)
+    window.addEventListener('resize', adjustUserInfoContainer);
 
     // Verificar o estado de autenticação periodicamente para manter a persistência
     const checkAuthState = setInterval(() => {
@@ -153,33 +204,4 @@
       sessionStorage.removeItem('userProfile');
     }
   }
-
-  // Adicionar listener de redimensionamento global para o container fixo
-  document.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('resize', () => {
-      const userInfoContainer = document.getElementById('user-info-container');
-      if (!userInfoContainer) return;
-      
-      // Aplicar estilos responsivos
-      const isMobile = window.innerWidth <= 480;
-      const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
-      
-      if (isMobile) {
-        userInfoContainer.style.bottom = '110px';
-        userInfoContainer.style.left = '-5px';
-        userInfoContainer.style.fontSize = '14px';
-        userInfoContainer.style.padding = '8px';
-      } else if (isTablet) {
-        userInfoContainer.style.bottom = '100px';
-        userInfoContainer.style.left = '-5px';
-        userInfoContainer.style.fontSize = '10px';
-        userInfoContainer.style.padding = '5px';
-      } else {
-        userInfoContainer.style.bottom = '60px';
-        userInfoContainer.style.left = '-11px';
-        userInfoContainer.style.fontSize = '12px';
-        userInfoContainer.style.padding = '8px';
-      }
-    });
-  });
 })();

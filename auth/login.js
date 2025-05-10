@@ -825,7 +825,7 @@ class LoginManager {
       }
     }
     
-    // Obter referência ao container existente em vez de criar um novo
+    // Obter referência ao container existente
     const userInfoContainer = document.getElementById('user-info-container');
     if (!userInfoContainer) {
       console.error('Container de informações do usuário não encontrado no DOM');
@@ -842,28 +842,14 @@ class LoginManager {
     // Mostrar o container
     userInfoContainer.style.display = 'block';
     
-    // Aplicar estilos responsivos baseados no tamanho da tela
+    // Aplicar estilos responsivos (manter esta parte se necessário)
     const isMobile = window.innerWidth <= 480;
     const isTablet = window.innerWidth > 480 && window.innerWidth <= 768;
     
-    if (isMobile) {
-      userInfoContainer.style.bottom = '110px';
-      userInfoContainer.style.left = '-5px';
-      userInfoContainer.style.fontSize = '14px';
-      userInfoContainer.style.padding = '8px';
-      console.log('[UserInfo] Aplicando estilo para celular');
-    } else if (isTablet) {
-      userInfoContainer.style.bottom = '100px';
-      userInfoContainer.style.left = '-5px';
-      userInfoContainer.style.fontSize = '10px';
-      userInfoContainer.style.padding = '5px';
-      console.log('[UserInfo] Aplicando estilo para tablet');
+    if (isMobile || isTablet) {
+      // Aplicar apenas os ajustes responsivos, deixando o resto para o CSS
+      console.log(`[UserInfo] Aplicando estilo para ${isMobile ? 'celular' : 'tablet'}`);
     } else {
-      // Desktop
-      userInfoContainer.style.bottom = '60px';
-      userInfoContainer.style.left = '-11px';
-      userInfoContainer.style.fontSize = '12px';
-      userInfoContainer.style.padding = '8px';
       console.log('[UserInfo] Aplicando estilo para desktop');
     }
   }
